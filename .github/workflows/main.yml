@@ -14,23 +14,26 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Application
+        id: build
         run: |
           echo "Building application..."
-          # Simulate a failure for testing
-          if [ $RANDOM -lt 20000 ]; then exit 1; fi
+          # Simulate a failure for testing (remove in production)
+          if [ $RANDOM -lt 20000 ]; then 
+            echo "::error::Build failed (simulated)"
+            exit 1
+          fi
+          echo "build_success=true" >> $GITHUB_OUTPUT
 
       - name: Deploy Application
+        if: steps.build.outcome == 'success'
         run: |
           echo "Deploying application to us-east-1..."
-
-    strategy:
-      fail-fast: false
 
   failover:
     needs: build-and-deploy
     runs-on: [self-hosted, eu-runner]
     name: Failover to EU Runner
-    if: needs.build-and-deploy.result == 'failure'
+    if: ${{ needs.build-and-deploy.result != 'success' }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -38,7 +41,7 @@ jobs:
       - name: Build Application (Failover)
         run: |
           echo "Building application in failover region..."
-          # Simulate success in backup
+          # Simulate success in backup (remove in production)
           if [ $RANDOM -lt 5000 ]; then exit 1; fi
 
       - name: Deploy Application (Failover)
