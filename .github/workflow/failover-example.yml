@@ -1,0 +1,11 @@
+yamlCopyEditname: Resilient CI/CD Workflowon:push:branches:- mainjobs:build-and-deploy:runs-on: [self-hosted, us-runner]
+    name: Build and Deploy (Primary)steps:- name: Checkout Codeuses: actions/checkout@v3- name: Build Applicationrun: |
+          echo "Building application..."
+          # Simulate a failure for testing
+          if [ $RANDOM -lt 20000 ]; then exit 1; fi- name: Deploy Applicationrun: |
+          echo "Deploying application to us-east-1..."strategy:fail-fast: falsecontinue-on-error: truefailover:needs: build-and-deployruns-on: [self-hosted, eu-runner]
+    name: Failover to EU Runnerif: ${{ needs.build-and-deploy.result == 'failure' }}steps:- name: Checkout Codeuses: actions/checkout@v3- name: Build Application (Failover)run: |
+          echo "Building application in failover region..."
+          # Simulate success in backup
+          if [ $RANDOM -lt 5000 ]; then exit 1; fi- name: Deploy Application (Failover)run: |
+          echo "Deploying application to eu-west-1..."
