@@ -1,10 +1,10 @@
 name: Resilient CI/CD Workflow
- 
+
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   build-and-deploy:
     runs-on: [self-hosted, us-runner]
@@ -12,37 +12,35 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
- 
+
       - name: Build Application
         run: |
           echo "Building application..."
           # Simulate a failure for testing
           if [ $RANDOM -lt 20000 ]; then exit 1; fi
- 
+
       - name: Deploy Application
         run: |
           echo "Deploying application to us-east-1..."
- 
+
     strategy:
       fail-fast: false
-    continue-on-error: true
- 
+
   failover:
     needs: build-and-deploy
     runs-on: [self-hosted, eu-runner]
     name: Failover to EU Runner
-    if: failure()
-    #if: ${{ needs.build-and-deploy.result == 'failure' }}
+    if: needs.build-and-deploy.result == 'failure'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
- 
+
       - name: Build Application (Failover)
         run: |
           echo "Building application in failover region..."
           # Simulate success in backup
           if [ $RANDOM -lt 5000 ]; then exit 1; fi
- 
+
       - name: Deploy Application (Failover)
         run: |
           echo "Deploying application to eu-west-1..."
