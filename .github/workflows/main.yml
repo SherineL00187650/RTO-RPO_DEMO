@@ -33,7 +33,7 @@ jobs:
     needs: build-and-deploy
     runs-on: [self-hosted, us-runner]
     name: Failover to US Runner
-    if: ${{ needs.build-and-deploy.result != 'success' }}
+    #if: ${{ needs.build-and-deploy.result != 'success' }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
