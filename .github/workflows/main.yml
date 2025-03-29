@@ -27,16 +27,20 @@ jobs:
       - name: Deploy Application
         if: steps.build.outcome == 'success'
         run: |
-          echo "Deploying application to us-east-1..."
+          echo "Deploying application to eu-west-1..."
 
   failover:
     needs: build-and-deploy
     runs-on: [self-hosted, us-runner]
     name: Failover to US Runner
     #if: ${{ needs.build-and-deploy.result != 'success' }}
+    if: ${{ failure() && needs.build-and-deploy.result == 'failure' }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+     
+      - name: Debug Job Status
+        run: echo "Primary job failed, triggering failover"
 
       - name: Build Application (Failover)
         run: |
